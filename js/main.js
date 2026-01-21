@@ -37,10 +37,29 @@ function draw() {
     const cols = Math.ceil(width / hexWidth) + 2;
     const rows = Math.ceil(height / vertDist) + 10;
 
+    const centerX = width / 2;
+    const centerY = height / 2;
+
     for (let row = -5; row < rows; row++) {
         for (let col = -1; col < cols; col++) {
-            const x = col * hexWidth + (row % 2) * (hexWidth / 2);
-            const y = row * vertDist - offset;
+            const baseX = col * hexWidth + (row % 2) * (hexWidth / 2);
+            const baseY = row * vertDist - offset;
+
+            // Radial displacement - threshold based (compress center, expand edges)
+            const dx = baseX - centerX;
+            const dy = baseY - centerY;
+            const distFromCenter = Math.sqrt(dx * dx + dy * dy);
+            const dirX = distFromCenter > 0 ? dx / distFromCenter : 0;
+            const dirY = distFromCenter > 0 ? dy / distFromCenter : 0;
+
+            // Scale distance: <1 compresses center, >1 expands edges
+            const neutralZone = 300;
+            const strength = 0.3;
+            const scaleFactor = 1 + ((distFromCenter - neutralZone) / neutralZone) * strength;
+            const newDist = distFromCenter * scaleFactor;
+
+            const x = centerX + dirX * newDist;
+            const y = centerY + dirY * newDist;
 
             const key = `${col},${row}`;
 
